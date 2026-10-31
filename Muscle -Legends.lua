@@ -233,4 +233,4 @@ CreateToggle("FPS Booster", "FPSBooster", function(state)
 end)
 
 Container.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
-1
+
