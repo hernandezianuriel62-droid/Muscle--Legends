@@ -1,5 +1,5 @@
 -- ==========================================================
--- Muscle Legends - Ultra Fast Training & Hub v1.1
+-- Muscle Legends - Hyper Speed Reps Hub v1.5
 -- ==========================================================
 
 local Players = game:GetService("Players")
@@ -11,12 +11,36 @@ local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
 -- Global Flags
-getgenv().UltraFastTraining = false
-getgenv().AutoRebirth = false
+getgenv().HyperSpeedTraining = false
+getgenv().AutoTPHalloween = false
 getgenv().FastPunch = false
+getgenv().AutoRebirth = false
 getgenv().AutoBoss = false
 getgenv().AntiAFK = true
 getgenv().FPSBooster = false
+
+-- Función segura para obtener el evento de golpes/repeticiones
+local function getMuscleEvent()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("MuscleEvent") then
+        return LocalPlayer.Character.MuscleEvent
+    elseif ReplicatedStorage:FindFirstChild("MuscleEvent") then
+        return ReplicatedStorage.MuscleEvent
+    elseif ReplicatedStorage:FindFirstChild("events") and ReplicatedStorage.events:FindFirstChild("MuscleEvent") then
+        return ReplicatedStorage.events.MuscleEvent
+    end
+    return nil
+end
+
+-- Función segura para obtener el evento de Rebirth
+local function getRebirthEvent()
+    local possibleNames = {"rEvent", "RebirthEvent", "rebirthEvent", "rebirth"}
+    for _, name in ipairs(possibleNames) do
+        if ReplicatedStorage:FindFirstChild(name) then
+            return ReplicatedStorage[name]
+        end
+    end
+    return nil
+end
 
 -- ----------------------------------------------------------
 -- 1. Anti-AFK
@@ -30,19 +54,19 @@ LocalPlayer.Idled:Connect(function()
 end)
 
 -- ----------------------------------------------------------
--- 2. Automatización Avanzada (Ultra Fast Reps & Punch)
+-- 2. Automatización & Hyper Speed (Decenas de Reps por Segundo)
 -- ----------------------------------------------------------
 
--- Fast Punch / Ataque Rápido
+-- Fast Punch
 task.spawn(function()
     while true do
         task.wait()
         if getgenv().FastPunch then
             pcall(function()
-                local muscleEvent = LocalPlayer.MuscleEvent or ReplicatedStorage:FindFirstChild("MuscleEvent")
-                if muscleEvent then
-                    muscleEvent:FireServer("punch", "rightHand")
-                    muscleEvent:FireServer("punch", "leftHand")
+                local event = getMuscleEvent()
+                if event then
+                    event:FireServer("punch", "rightHand")
+                    event:FireServer("punch", "leftHand")
                 end
             end)
         end
@@ -55,26 +79,63 @@ task.spawn(function()
         task.wait(1)
         if getgenv().AutoRebirth then
             pcall(function()
-                local rebirthEvent = ReplicatedStorage:FindFirstChild("rEvent") or ReplicatedStorage:FindFirstChild("RebirthEvent")
-                if rebirthEvent then
-                    rebirthEvent:FireServer("rebirthRequest")
+                local rEvent = getRebirthEvent()
+                if rEvent then
+                    rEvent:FireServer("rebirthRequest")
                 end
             end)
         end
     end
 end)
 
--- ULTRA FAST TRAINING (Bucle síncronizado por cuadro para velocidad máxima)
-RunService.RenderStepped:Connect(function()
-    if getgenv().UltraFastTraining then
-        pcall(function()
-            local muscleEvent = LocalPlayer.MuscleEvent or ReplicatedStorage:FindFirstChild("MuscleEvent")
-            if muscleEvent then
-                -- Dispara múltiples repeticiones de golpe por frame para saturar la velocidad
-                muscleEvent:FireServer("rep")
-                muscleEvent:FireServer("rep")
-            end
-        end)
+-- HYPER SPEED TRAINING (Dispara decenas/cientos de repeticiones por segundo en bucle paralelo)
+task.spawn(function()
+    while true do
+        if getgenv().HyperSpeedTraining then
+            pcall(function()
+                local event = getMuscleEvent()
+                if event then
+                    -- Lanza múltiples ráfagas instantáneas en el mismo ciclo
+                    for i = 1, 15 do
+                        event:FireServer("rep")
+                    end
+                end
+            end)
+        end
+        task.wait() -- Sin retraso fijo, avanza al siguiente micro-ciclo inmediatamente
+    end
+end)
+
+-- AUTO TP & HALLOWEEN GYM + HYPER SPEED
+task.spawn(function()
+    while true do
+        if getgenv().AutoTPHalloween then
+            pcall(function()
+                local event = getMuscleEvent()
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local hrp = char.HumanoidRootPart
+                    
+                    -- Busca la máquina de Halloween en el mapa y te posiciona
+                    for _, obj in pairs(workspace:GetDescendants()) do
+                        if obj.Name:lower():find("halloween") or obj.Name:lower():find("spooky") or obj.Name:lower():find("pumpkin") or obj.Name:lower():find("candy") then
+                            if obj:IsA("BasePart") and (obj.Size.Magnitude > 2 and obj.Size.Magnitude < 20) then
+                                hrp.CFrame = obj.CFrame + Vector3.new(0, 3, 0)
+                                break
+                            end
+                        end
+                    end
+                    
+                    -- Envía la ráfaga masiva de repeticiones
+                    if event then
+                        for i = 1, 15 do
+                            event:FireServer("rep")
+                        end
+                    end
+                end
+            end)
+        end
+        task.wait()
     end
 end)
 
@@ -84,16 +145,15 @@ task.spawn(function()
         task.wait(0.5)
         if getgenv().AutoBoss then
             pcall(function()
-                local bossFolder = workspace:FindFirstChild("Bosses") or workspace:FindFirstChild("Boss")
-                if bossFolder then
-                    for _, boss in pairs(bossFolder:GetChildren()) do
-                        local hrp = boss:FindFirstChild("HumanoidRootPart")
-                        local hum = boss:FindFirstChild("Humanoid")
-                        if hrp and hum and hum.Health > 0 then
-                            LocalPlayer.Character.HumanoidRootPart.CFrame = hrp.CFrame * CFrame.new(0, 0, 3)
-                            local muscleEvent = LocalPlayer.MuscleEvent or ReplicatedStorage:FindFirstChild("MuscleEvent")
-                            if muscleEvent then
-                                muscleEvent:FireServer("punch", "rightHand")
+                for _, obj in pairs(workspace:GetChildren()) do
+                    if obj.Name:lower():find("boss") or obj.Name == "Electro Legends Boss" or obj.Name == "King Kronos" then
+                        local hrp = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart
+                        local hum = obj:FindFirstChild("Humanoid")
+                        if hrp and hum and hum.Health > 0 and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            LocalPlayer.Character.HumanoidRootPart.CFrame = hrp.CFrame * CFrame.new(0, 0, 4)
+                            local event = getMuscleEvent()
+                            if event then
+                                event:FireServer("punch", "rightHand")
                             end
                         end
                     end
@@ -112,7 +172,7 @@ ScreenGui.Parent = CoreGui:FindFirstChild("RobloxGui") or CoreGui
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 240, 0, 310)
+MainFrame.Size = UDim2.new(0, 240, 0, 380)
 MainFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 MainFrame.BorderSizePixel = 0
@@ -127,7 +187,7 @@ UICorner.CornerRadius = UDim.new(0, 10)
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -40, 0, 35)
 Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Text = "Muscle Hub v1.1"
+Title.Text = "Muscle Hub v1.5"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 15
 Title.Font = Enum.Font.GothamBold
@@ -201,15 +261,14 @@ ToggleSizeBtn.MouseButton1Click:Connect(function()
         ToggleSizeBtn.Text = "+"
     else
         Container.Visible = true
-        MainFrame.Size = UDim2.new(0, 240, 0, 310)
+        MainFrame.Size = UDim2.new(0, 240, 0, 380)
         ToggleSizeBtn.Text = "-"
     end
 end)
 
--- ----------------------------------------------------------
--- 4. Creación de Botones en la Interfaz
--- ----------------------------------------------------------
-CreateToggle("Ultra Fast Training", "UltraFastTraining")
+-- Creación de Botones en la Interfaz
+CreateToggle("Auto TP & Halloween", "AutoTPHalloween")
+CreateToggle("Hyper Speed (Massive)", "HyperSpeedTraining")
 CreateToggle("Fast Punch", "FastPunch")
 CreateToggle("Auto Rebirth", "AutoRebirth")
 CreateToggle("Auto Boss", "AutoBoss")
@@ -233,4 +292,3 @@ CreateToggle("FPS Booster", "FPSBooster", function(state)
 end)
 
 Container.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
-
